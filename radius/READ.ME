@@ -1,15 +1,55 @@
-# 📖 Natív Python RADIUS Szerver & Cisco CSR 1000v AAA Útmutató
+# Dinamikus Python RADIUS Szerver - Cisco AAA Hitelesítéshez
 
-Ez a projekt egy könnyűsúlyú, külső függőségektől teljesen mentes (natív hálózati socket alapú) RADIUS hitelesítési (AAA) szervert és egy hozzá tartozó tesztklienst tartalmaz. A kód kifejezetten úgy lett kifejlesztve, hogy kiküszöbölje a piacon lévő Python RADIUS könyvtárak (pl. `pyrad`) adattípus-kezelési (string/bytes) inkompatibilitásait.
+Ez a projekt egy egyetlen fájlból álló, keresztplatformos (Windows és Kali Linux kompatibilis) RADIUS szervert, valamint egy hozzá tartozó tesztkliens szkriptet tartalmaz. Kifejezetten Cisco hálózati eszközök (Switchek, Routerek, tűzfalak) AAA (Authentication, Authorization, and Accounting) belépési folyamatainak kiszolgálására és tesztelésére készült.
+
+## 🚀 Főbb Jellemzők
+
+* **Keresztplatformos működés:** A standard `pyrad.server.Server` osztály Windows alatt összeomlik a `select.poll()` hiánya miatt. Ez a megvalósítás tiszta UDP socket alapú kezelést használ, így **Windows és Kali Linux rendszereken is egységesen, módosítás nélkül fut**.
+* **Dinamikus beolvasás (Hot Reload):** Nem szükséges újraindítani a szervert, ha új hálózati eszközt vagy felhasználót adunk hozzá. Minden bejelentkezési kísérletnél valós időben olvassa be a konfigurációs fájlokat a lemezről.
+* **Egyszerű szöveges adatbázis:** Nincs szükség nehézkes SQL adatbázisokra vagy FreeRADIUS komplex beállításokra.
 
 ---
 
-## 1. Rész: A Python RADIUS Szerver Előkészítése
+## 📂 Fájlstruktúra és Formátumok
 
-### 1. Lépés: A Szerver Konfigurációs Fájljai
-Győződj meg róla, hogy a projekt mappájában lévő adatbázis fájlok tartalmazzák a megfelelő adatokat.
+A program működéséhez az alábbi fájlok szükségesek ugyanabban a mappában:
 
-* **`devices.txt`** (Hálózati eszközök regisztrációja):
-  Add hozzá a CSR 1000v routered IP-címét és az AAA kommunikációhoz használni kívánt közös titkot (Shared Secret).
-  ```text
-  192.168.233.254;secret123;Cisco_CSR_Router
+1. **`server.py`**: A RADIUS szerver főprogramja.
+2. **`client.py`**: A tesztkliens, amivel valódi Cisco eszköz nélkül is ellenőrizhető a működés.
+3. **`devices.txt`**: A hálózati eszközök (kliensek) listája.
+   * **Formátum:** `IPCÍM;SECRET;HOSTNAME`
+   * **Példa:** `192.168.1.5;myciscosecret;Core_Router`
+4. **`users.txt`**: A jogosult felhasználók adatbázisa.
+   * **Formátum:** `username;password`
+   * **Példa:** `admin;Cisco123!`
+5. **`log.txt`**: A szerver által automatikusan generált és frissített naplófájl.
+   * **Formátum:** `datum;ipcim;username;ACCEPT|REJECT`
+   * **Példa:** `2026-06-19 07:45:12;192.168.1.5;admin;ACCEPT`
+
+---
+
+## 🛠️ Telepítés és Beállítás Lépésről Lépésre (Step-by-Step)
+
+### 1. Lépés: Python és PIP telepítése / frissítése
+
+#### 🔹 Windows Rendszeren:
+1. Töltsd le a legfrissebb Python 3-as verziót a hivatalos oldalról ([python.org](https://www.python.org/downloads/)).
+2. A telepítő elindításakor **feltétlenül pipáld be az "Add python.exe to PATH"** lehetőséget!
+3. Nyiss egy parancssort (CMD) vagy PowerShellt, és ellenőrizd a verziókat:
+   ```bash
+   python --version
+   pip --version
+```
+Linux rendszeren
+```bash
+sudo apt update
+sudo apt install python3 python3-pip -y
+```
+4. A pyrad könyvtár telepítése
+```bash
+pip install pyrad
+```
+esetleg
+```bash
+pip install pyrad --break-system-packages
+```
