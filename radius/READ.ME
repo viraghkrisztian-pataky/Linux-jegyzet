@@ -53,3 +53,40 @@ esetleg
 ```bash
 pip install pyrad --break-system-packages
 ```
+
+FUTTATAS...
+
+
+```ios
+conf t
+
+! =====================================================================
+! 1. HITELLESÍTŐ (KIMENŐ) RADIUS SZERVER DEFINIÁLÁSA (Ez hiányzott!)
+! =====================================================================
+! Cseréld ki a 192.168.233.1-et a Python szerveres géped VALÓDI IP-jére,
+! a kulcsot pedig arra, ami a devices.txt-ben szerepel (pl. secret123)!
+radius server SajatPythonRADIUS
+ address ipv4 192.168.233.1 auth-port 1812
+ key secret123
+
+! =====================================================================
+! 2. DINAMIKUS (BEMENŐ) COA SZERVER JAVÍTÁSA
+! =====================================================================
+aaa server radius dynamic-author
+ client 192.168.233.1
+ server-key secret123
+ port 3799
+
+! =====================================================================
+! 3. AAA ÉS SSH ELÉRÉS ÖSSZEKÖTÉSE
+! =====================================================================
+aaa new-model
+aaa authentication login SSH group radius local
+aaa session-id common
+
+line vty 0 4
+ login authentication SSH
+ transport input ssh
+end
+write
+```
