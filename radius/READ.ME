@@ -1,0 +1,15 @@
+# 📖 Natív Python RADIUS Szerver & Cisco CSR 1000v AAA Útmutató
+
+Ez a projekt egy könnyűsúlyú, külső függőségektől teljesen mentes (natív hálózati socket alapú) RADIUS hitelesítési (AAA) szervert és egy hozzá tartozó tesztklienst tartalmaz. A kód kifejezetten úgy lett kifejlesztve, hogy kiküszöbölje a piacon lévő Python RADIUS könyvtárak (pl. `pyrad`) adattípus-kezelési (string/bytes) inkompatibilitásait.
+
+---
+
+## 1. Rész: A Python RADIUS Szerver Előkészítése
+
+### 1. Lépés: A Szerver Konfigurációs Fájljai
+Győződj meg róla, hogy a projekt mappájában lévő adatbázis fájlok tartalmazzák a megfelelő adatokat.
+
+* **`devices.txt`** (Hálózati eszközök regisztrációja):
+  Add hozzá a CSR 1000v routered IP-címét és az AAA kommunikációhoz használni kívánt közös titkot (Shared Secret).
+  ```text
+  192.168.233.254;secret123;Cisco_CSR_Router
